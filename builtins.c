@@ -42,7 +42,7 @@ void new_exit(vars_t *vars)
 	/**Si exit tiene argumentos, lo manejamos*/
 	if (_strcmpr(vars->array_tokens[0], "exit") ==
 			0 &&
-		vas->array_tokerns[1] != NULL)
+		vars->array_tokens[1] != NULL)
 
 	{
 		/* con esta funcion nos aseguramos que el numero ingresado sea valido*/

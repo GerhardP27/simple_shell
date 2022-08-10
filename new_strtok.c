@@ -1,197 +1,105 @@
 #include "main.h"
 /**
- * new_help - help builtin command
- * @vars: if command matches a builtin name, text file is sent to stdout
- * Return: 0 if sucess
+ * check_if_match - checks if a character matches any in a string
+ * @c: character to check
+ * @str: string to check
+ *
+ * Return: 1 if match, 0 if not
  */
-
-void new_help(vars_t *vars)
+unsigned int check_if_match(char c, const char *str)
 {
-	char *file;
-	int fd, r;
-	char *s;
+	unsigned int i;
 
-	if (vars->array_tokens[1] == NULL)
+	for (i = 0; str[i] != '\0'; i++)
 	{
-		file = "/home/shell_test/shelltestenviroment/helpfiles/help";
-		fd = open(file, O_RDWR);
-
-		s = malloc(300);
-		if (s == NULL)
-		{
-			_puts_error("Fatal Error");
-			return;
-		}
-		while ((r = read(fd, s, 300)) > 0)
-		{
-			r = write(1, s, r);
-			print_message("\n");
-			if (r == -1)
-			{
-				_puts_error("Fatal Error");
-				return;
-			}
-		}
-		free(s);
-		fd = close(fd);
-		return;
+		if (c == str[i])
+			return (1);
 	}
-	else
-		new_help_help(vars);
+	return (0);
 }
 
 /**
- * new_help_help - help builtin command help
- * @vars: if command matches a builtin name, text file is sent to stdout
- * Return: 0 if sucess
+ * new_strtok - custom strtok
+ * @str: string to tokenize
+ * @delim: delimiter to tokenize against
+ *
+ * Return: pointer to the next token or NULL
  */
-void new_help_help(vars_t *vars)
+char *new_strtok(char *str, const char *delim)
 {
-	char *file;
-	int f, r;
-	char *sd;
+	static char *token_start;
+	static char *next_token;
+	unsigned int i;
 
-	if (_strcmpr(vars->array_tokens[1], "help") == 0)
+	if (str != NULL)
+		next_token = str;
+	token_start = next_token;
+	if (token_start == NULL)
+		return (NULL);
+	for (i = 0; next_token[i] != '\0'; i++)
 	{
-		file = "/home/shell_test/shelltestenviroment/helpfiles/help_help";
-		fd = open(file, O_RDWR);
-
-		s = malloc(300);
-		if (s == NULL)
-		{
-			_puts_error("Fatal Error");
-			return;
-		}
-		while ((r = read(fd, s, 300)) > 0)
-		{
-			r = write(1, s, r);
-			print_message("\n");
-			if (r == -1)
-			{
-				_puts_error("Fatal Error");
-				return;
-			}
-		}
-		free(s);
-		fd = close(fd);
+		if (check_if_match(next_token[i], delim) == 0)
+			break;
 	}
+	if (next_token[i] == '\0' || next_token[i] == '#')
+	{
+		next_token = NULL;
+		return (NULL);
+	}
+	token_start = next_token + i;
+	next_token = token_start;
+	for (i = 0; next_token[i] != '\0'; i++)
+	{
+		if (check_if_match(next_token[i], delim) == 1)
+			break;
+	}
+	if (next_token[i] == '\0')
+		next_token = NULL;
 	else
-		new_help_exit(vars);
+	{
+		next_token[i] = '\0';
+		next_token = next_token + i + 1;
+		if (*next_token == '\0')
+			next_token = NULL;
+	}
+	return (token_start);
 }
 
 /**
- * new_help_exit - help builtin command exit
- * @vars: if command matches a builtin name, text file is sent to stdout
- * Return: 0 if sucess
+ * build_path - Combines two strings one representing the path directory and
+ * another representing the command file.
+ * @directory: Represents a directory in the path.
+ * @command: Represents a file in a directory of the path.
+ * Return: Upon success a string representing the full path of a command.
+ * Otherwise NULL.
  */
-void new_help_exit(vars_t *vars)
+char *build_path(char *directory, char *command)
 {
-	char *file;
-	int fd, r;
-	char *s;
+	int i, j;
+	int dir_len;
+	int command_len;
+	int len;
+	char *built;
 
-	if (_strcmpr(vars->array_tokens[1], "exit") == 0)
+	if (directory == NULL || command == NULL)
+		return (NULL);
+	dir_len = _strlen(directory) + 1;
+	command_len =_strlen(command) + 1;
+	len = dir_len + command_len;
+
+	built = malloc(sizeof(char) * len);
+	if (built == NULL)
+		return (NULL);
+
+	for (i = 0; i < len; i++)
 	{
-		file = "/home/shell_test/shelltestenviroment/helpfiles/exit";
-		fd = open(file, O_RDWR);
-
-		s = malloc(300);
-		if (s == NULL)
-		{
-			_puts_error("Fatal Error");
-			return;
-		}
-		while ((r = read(fd, s, 300)) > 0)
-		{
-			r = write(1, s, r);
-			print_message("\n");
-			if (r == -1)
-			{
-				_puts_error("Fatal Error");
-				return;
-			}
-		}
-		free(s);
-		fd = close(fd);
+		for (j = 0; directory[j] != '\0'; j++, i++)
+			built[i] = directory[j];
+		built[i] = '/';
+		i++;
+		for (j = 0; command[j] != '\0'; j++, i++)
+			built[i] = command[j];
 	}
-
-	else
-		new_help_cd(vars);
-}
-/**
- * new_help_cd - help builtin command cd
- * @vars: if command matches a builtin name, text file is sent to stdout
- * Return: 0 if sucess
- */
-void new_help_cd(vars_t *vars)
-{
-	char *file;
-	int fd, r;
-	char *s;
-
-	if (_strcmpr(vars->array_tokens[1], "cd") == 0)
-	{
-		file = "/home/shell_test/shelltestenviroment/helpfiles/cd";
-		fd = open(file, O_RDWR);
-
-		s = malloc(300);
-		if (s == NULL)
-		{
-			_puts_error("Fatal Error");
-			return;
-		}
-		while ((r = read(fd, s, 300)) > 0)
-		{
-			r = write(1, s, r);
-			print_message("\n");
-			if (r == -1)
-			{
-				_puts_error("Fatal Error");
-				return;
-			}
-		}
-		free(s);
-		fd = close(fd);
-	}
-
-	else
-		new_help_env(vars);
-}
-/**
- * new_help_env - help builtin command env
- * @vars: if command matches a builtin name, text file is sent to stdout
- * Return: 0 if sucess
- */
-void new_help_env(vars_t *vars)
-{
-	char *file;
-	int fd, r;
-	char *s;
-
-	if (_strcmpr(vars->array_tokens[1], "env") == 0)
-	{
-		file = "/home/shell_test/shelltestenviroment/helpfiles/env";
-		fd = open(file, O_RDWR);
-
-		s = malloc(300);
-		if (s == NULL)
-		{
-			_puts_error("Fatal Error");
-			return;
-		}
-		while ((r = read(fd, s, 300)) > 0)
-		{
-			r = write(1, s, r);
-			print_message("\n");
-			if (r == -1)
-			{
-				_puts_error("Fatal Error");
-				return;
-			}
-		}
-		free(s);
-		fd = close(fd);
-	}
-	else
-		new_help_history(vars);
+	built[--i] = '\0';
+	return (built);
 }
